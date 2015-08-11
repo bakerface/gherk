@@ -4,7 +4,8 @@
   "description": "A minimalistc parser for the Gherkin syntax",
   "main": "lib/gherk.js",
   "scripts": {
-    "test": "istanbul cover --report html node_modules/.bin/_mocha"
+    "test": "istanbul cover --report html node_modules/.bin/_mocha",
+    "coveralls": "istanbul cover --report lcovonly node_modules/.bin/_mocha && cat coverage/lcov.info | node_modules/coveralls/bin/coveralls.js"
   },
   "repository": {
     "type": "git",

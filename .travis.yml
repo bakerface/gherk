@@ -1,0 +1,12 @@
+language: node_js
+
+node_js:
+  - "0.10"
+  - "0.12"
+
+branches:
+  only:
+    - master
+
+script:
+  - if [[ `node --version` == *v0.12* ]]; then npm run-script coveralls; else npm test; fi

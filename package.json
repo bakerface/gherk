@@ -1,0 +1,35 @@
+{
+  "name": "gherk",
+  "version": "0.0.0",
+  "description": "A minimalistc parser for the Gherkin syntax",
+  "main": "lib/gherk.js",
+  "scripts": {
+    "test": "istanbul cover --report html node_modules/.bin/_mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bakerface/gherk.git"
+  },
+  "keywords": [
+    "gherkin",
+    "syntax",
+    "parser",
+    "feature",
+    "scenario",
+    "given",
+    "when",
+    "then"
+  ],
+  "author": "Christopher M. Baker",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bakerface/gherk/issues"
+  },
+  "homepage": "https://github.com/bakerface/gherk",
+  "devDependencies": {
+    "coveralls": "^2.11.3",
+    "istanbul": "^0.3.17",
+    "mocha": "^2.2.5",
+    "should": "^7.0.3"
+  }
+}

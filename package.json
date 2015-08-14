@@ -1,11 +1,12 @@
 {
   "name": "gherk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A minimalistic parser for the Gherkin syntax",
   "main": "lib/gherk.js",
   "scripts": {
     "test": "istanbul cover --report html node_modules/.bin/_mocha",
-    "coveralls": "istanbul cover --report lcovonly node_modules/.bin/_mocha && cat coverage/lcov.info | node_modules/coveralls/bin/coveralls.js"
+    "coverage": "istanbul cover --report lcovonly node_modules/.bin/_mocha",
+    "codeclimate": "codeclimate-test-reporter < coverage/lcov.info"
   },
   "repository": {
     "type": "git",
@@ -28,7 +29,7 @@
   },
   "homepage": "https://github.com/bakerface/gherk",
   "devDependencies": {
-    "coveralls": "^2.11.3",
+    "codeclimate-test-reporter": "^0.1.0",
     "istanbul": "^0.3.17",
     "mocha": "^2.2.5",
     "should": "^7.0.3"

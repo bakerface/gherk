@@ -3,11 +3,13 @@ sudo: false
 
 node_js:
   - "0.10"
+  - "0.11"
   - "0.12"
 
-branches:
-  only:
-    - master
+env:
+  - CODECLIMATE_REPO_TOKEN=c661e2fffd4e60b952d1b7029c9435f7f8e52f6c8106bf8dff7b1bf65ecacb00
 
-script:
-  - if [[ `node --version` == *v0.12* ]]; then npm run-script coveralls; else npm test; fi
+after_success:
+  - npm run-script coverage
+  - npm run-script codeclimate
+

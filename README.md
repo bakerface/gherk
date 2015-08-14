@@ -1,17 +1,16 @@
 # gherk
-[![Release Version](https://img.shields.io/badge/version-0.1.1-blue.svg)](https://github.com/bakerface/gherk)
-[![NPM Version](https://badge.fury.io/js/gherk.svg)](http://badge.fury.io/js/gherk)
-[![Build Status](https://travis-ci.org/bakerface/gherk.svg?branch=master)](https://travis-ci.org/bakerface/gherk)
-[![Code Climate](https://codeclimate.com/github/bakerface/gherk/badges/gpa.svg)](https://codeclimate.com/github/bakerface/gherk)
-[![Test Coverage](https://codeclimate.com/github/bakerface/gherk/badges/coverage.svg)](https://codeclimate.com/github/bakerface/gherk/coverage)
-[![GitHub issues](https://img.shields.io/github/issues/bakerface/gherk.svg)](https://github.com/bakerface/gherk/issues)
+[![npm version](https://badge.fury.io/js/gherk.svg)](http://badge.fury.io/js/gherk)
+[![build status](https://travis-ci.org/bakerface/gherk.svg?branch=master)](https://travis-ci.org/bakerface/gherk)
+[![code climate](https://codeclimate.com/github/bakerface/gherk/badges/gpa.svg)](https://codeclimate.com/github/bakerface/gherk)
+[![test coverage](https://codeclimate.com/github/bakerface/gherk/badges/coverage.svg)](https://codeclimate.com/github/bakerface/gherk/coverage)
+[![github issues](https://img.shields.io/github/issues/bakerface/gherk.svg)](https://github.com/bakerface/gherk/issues)
 [![dependencies](https://david-dm.org/bakerface/gherk.svg)](https://david-dm.org/bakerface/gherk)
-[![devDependencies](https://david-dm.org/bakerface/gherk/dev-status.svg)](https://david-dm.org/bakerface/gherk#info=devDependencies)
-[![Downloads](http://img.shields.io/npm/dm/gherk.svg)](https://www.npmjs.com/package/gherk)
+[![dev dependencies](https://david-dm.org/bakerface/gherk/dev-status.svg)](https://david-dm.org/bakerface/gherk#info=devDependencies)
+[![downloads](http://img.shields.io/npm/dm/gherk.svg)](https://www.npmjs.com/package/gherk)
+
+Given a feature file named **drink.feature** with the contents:
 
 ```
-# drink.feature
-
 Feature: Can drink beer when thirsty
   As a drinker
   I want to take beer off the wall
@@ -36,15 +35,19 @@ Feature: Can drink beer when thirsty
     And there are ghosts in the room
 ```
 
+it is easy to parse the file using the following script:
+
 ``` javascript
 var fs = require('fs');
 var gherk = require('gherk');
 var file = fs.readFileSync('drink.feature');
 
-gherk.parse(file.toString());
+console.log(gherk.parse(file));
+```
 
-// =>
+which results in the following JSON object:
 
+``` javascript
 [
   {
     feature: 'Can drink beer when thirsty',

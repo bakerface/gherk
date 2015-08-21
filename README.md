@@ -8,6 +8,8 @@
 [![dev dependencies](https://david-dm.org/bakerface/gherk/dev-status.svg)](https://david-dm.org/bakerface/gherk#info=devDependencies)
 [![downloads](http://img.shields.io/npm/dm/gherk.svg)](https://www.npmjs.com/package/gherk)
 
+### gherk.parse(text)
+
 Given a feature file named **drink.feature** with the contents:
 
 ```
@@ -35,7 +37,7 @@ Feature: Can drink beer when thirsty
     And there are ghosts in the room
 ```
 
-it is easy to parse the file using the following script:
+When calling the `parse` function:
 
 ``` javascript
 var fs = require('fs');
@@ -45,7 +47,7 @@ var file = fs.readFileSync('drink.feature');
 console.log(gherk.parse(file));
 ```
 
-which results in the following JSON object:
+Then the following JSON object is returned:
 
 ``` javascript
 [
@@ -98,3 +100,83 @@ which results in the following JSON object:
   }
 ]
 ```
+
+### gherk.test()
+
+Given a feature file named **drink.feature** with the contents:
+
+```
+Feature: Can drink beer when thirsty
+  As a drinker
+  I want to take beer off the wall
+  In order to satisfy my thirst
+
+  Scenario: Can take a single beer
+    Given 100 bottles of beer on the wall
+    When a bottle is taken down
+    Then there are 99 bottles of beer on the wall
+
+  Scenario: Can take multiple beers
+    Given 100 bottles of beer on the wall
+    When 5 bottles are taken down
+    Then there are 95 bottles of beer on the wall
+```
+
+When calling the `test` function:
+
+``` javascript
+var fs = require('fs');
+var gherk = require('gherk');
+var test = gherk.test();
+var file = fs.readFileSync('drink.feature');
+
+test.beforeFeature(function(feature, next) {
+  // this runs before each feature
+  next();
+});
+
+test.afterFeature(function(feature, next) {
+  // this runs after each feature
+  next();
+});
+
+test.beforeScenario(function(feature, scenario, next) {
+  // this runs before each scenario
+  next();
+});
+
+test.afterScenario(function(feature, scenario, next) {
+  // this runs after each scenario
+  next();
+});
+
+test.given(/(\d+) bottles of beer on the wall/,
+  function(bottles, next) {
+    this.bottles = parseInt(bottles);
+    next();
+  });
+
+test.when(/(\d+) bottles are taken down/,
+  function(bottles, next) {
+    this.bottles -= parseInt(bottles);
+    next();
+  });
+
+test.when(/a bottle is taken down/,
+  function(next) {
+    this.bottles--;
+    next();
+  });
+
+test.then(/there are (\d+) bottles of beer on the wall/,
+  function(bottles, next) {
+    next(this.bottles != parseInt(bottles));
+  });
+
+test(file, function(e) {
+  // this callback is optional
+  // if excluded, any errors are thrown
+});
+```
+
+Then the scenarios are executed sequentially using the pre-defined actions.

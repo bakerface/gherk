@@ -101,7 +101,7 @@ Then the following JSON object is returned:
 ]
 ```
 
-### gherk.test()
+### gherk()
 
 Given a feature file named **drink.feature** with the contents:
 
@@ -122,61 +122,52 @@ Feature: Can drink beer when thirsty
     Then there are 95 bottles of beer on the wall
 ```
 
-When calling the `test` function:
+When running mocha on a file named `test.js` with the following:
 
 ``` javascript
 var fs = require('fs');
 var gherk = require('gherk');
-var test = gherk.test();
+var should = require('should');
+
 var file = fs.readFileSync('drink.feature');
-
-test.beforeFeature(function(feature, next) {
-  // this runs before each feature
-  next();
-});
-
-test.afterFeature(function(feature, next) {
-  // this runs after each feature
-  next();
-});
-
-test.beforeScenario(function(feature, scenario, next) {
-  // this runs before each scenario
-  next();
-});
-
-test.afterScenario(function(feature, scenario, next) {
-  // this runs after each scenario
-  next();
-});
+var test = gherk();
 
 test.given(/(\d+) bottles of beer on the wall/,
-  function(bottles, next) {
+  function(bottles) {
     this.bottles = parseInt(bottles);
-    next();
   });
 
 test.when(/(\d+) bottles are taken down/,
-  function(bottles, next) {
+  function(bottles) {
     this.bottles -= parseInt(bottles);
-    next();
   });
 
 test.when(/a bottle is taken down/,
-  function(next) {
+  function() {
     this.bottles--;
-    next();
   });
 
 test.then(/there are (\d+) bottles of beer on the wall/,
-  function(bottles, next) {
-    next(this.bottles != parseInt(bottles));
+  function(bottles) {
+    should(this.bottles).eql(parseInt(bottles));
   });
 
-test(file, function(e) {
-  // this callback is optional
-  // if excluded, any errors are thrown
-});
+test.run(file);
 ```
 
-Then the scenarios are executed sequentially using the pre-defined actions.
+Then the output of mocha will be the following:
+
+```
+Feature: Can drink beer when thirsty
+  Scenario: Can take a single beer
+    ✓ Given 100 bottles of beer on the wall
+    ✓ When a bottle is taken down
+    ✓ Then there are 99 bottles of beer on the wall
+  Scenario: Can take multiple beers
+    ✓ Given 100 bottles of beer on the wall
+    ✓ When 5 bottles are taken down
+    ✓ Then there are 95 bottles of beer on the wall
+
+
+6 passing (8ms)
+```

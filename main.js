@@ -48,7 +48,10 @@ Suite.prototype.resolve = function(list, text) {
 };
 
 Suite.prototype.given = function(r, f) {
-  this._given.push({ r: r, f: f });
+  this._given.push({
+    r: r,
+    f: f
+  });
 };
 
 Suite.prototype.resolveGiven = function(text) {
@@ -56,7 +59,10 @@ Suite.prototype.resolveGiven = function(text) {
 };
 
 Suite.prototype.when = function(r, f) {
-  this._when.push({ r: r, f: f });
+  this._when.push({
+    r: r,
+    f: f
+  });
 };
 
 Suite.prototype.resolveWhen = function(text) {
@@ -64,7 +70,10 @@ Suite.prototype.resolveWhen = function(text) {
 };
 
 Suite.prototype.then = function(r, f) {
-  this._then.push({ r: r, f: f });
+  this._then.push({
+    r: r,
+    f: f
+  });
 };
 
 Suite.prototype.resolveThen = function(text) {

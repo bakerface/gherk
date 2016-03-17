@@ -25,7 +25,8 @@ var should = require('should');
 var gherk = require('..');
 
 describe('gherk()', function() {
-  var test, feature = [
+  var test;
+  var feature = [
     'Feature: Can drink beer when thirsty',
     '  As a drinker',
     '  I want to take beer off the wall',
@@ -52,7 +53,7 @@ describe('gherk()', function() {
 
   beforeEach(function() {
     test = gherk();
-  })
+  });
 
   it('should throw an error for unhandled given', function(done) {
     try {
@@ -62,10 +63,10 @@ describe('gherk()', function() {
       should(e).eql(new ReferenceError('100 bottles of beer on the wall'));
       done();
     }
-  })
+  });
 
   it('should throw an error for unhandled when', function(done) {
-    test.given(/(\d+) bottles of beer on the wall/, function(bottles) {
+    test.given(/(\d+) bottles of beer on the wall/, function(_bottles) {
 
     });
 
@@ -76,10 +77,10 @@ describe('gherk()', function() {
       should(e).eql(new ReferenceError('a bottle is taken down'));
       done();
     }
-  })
+  });
 
   it('should throw an error for unhandled then', function(done) {
-    test.given(/(\d+) bottles of beer on the wall/, function(bottles) {
+    test.given(/(\d+) bottles of beer on the wall/, function(_bottles) {
 
     });
 
@@ -91,14 +92,15 @@ describe('gherk()', function() {
       test.run(feature);
     }
     catch (e) {
-      should(e).eql(new ReferenceError('there are 99 bottles of beer on the wall'));
+      var ex = new ReferenceError('there are 99 bottles of beer on the wall');
+      e.should.eql(ex);
       done();
     }
-  })
+  });
 
   it('should call the handler functions for each line', function() {
     test.given(/(\d+) bottles of beer on the wall/, function(bottles) {
-      this.bottles = parseInt(bottles);
+      this.bottles = parseInt(bottles, 10);
     });
 
     test.given(/there is nobody in the room/, function() {
@@ -110,7 +112,7 @@ describe('gherk()', function() {
     });
 
     test.when(/(\d+) bottles are taken down/, function(bottles) {
-      this.bottles -= parseInt(bottles);
+      this.bottles -= parseInt(bottles, 10);
     });
 
     test.when(/they are floating in the air/, function() {
@@ -118,7 +120,7 @@ describe('gherk()', function() {
     });
 
     test.then(/there are (\d+) bottles of beer on the wall/, function(bottles) {
-      should(this.bottles).eql(parseInt(bottles));
+      should(this.bottles).eql(parseInt(bottles, 10));
     });
 
     test.then(/there are ghosts in the room/, function() {
@@ -126,5 +128,5 @@ describe('gherk()', function() {
     });
 
     test.run(feature);
-  })
-})
+  });
+});

@@ -1,12 +1,10 @@
 {
   "name": "gherk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A minimalistic parser for the Gherkin syntax",
   "main": "index.js",
   "scripts": {
-    "test": "istanbul cover --report html node_modules/.bin/_mocha",
-    "examples": "cd examples && istanbul cover --report html ../node_modules/.bin/_mocha",
-    "coverage": "istanbul cover --report lcovonly node_modules/.bin/_mocha",
+    "test": "xo && istanbul cover node_modules/.bin/_mocha",
     "codeclimate": "codeclimate-test-reporter < coverage/lcov.info"
   },
   "repository": {
@@ -23,6 +21,42 @@
     "when",
     "then"
   ],
+  "xo": {
+    "space": 2,
+    "semicolon": true,
+    "globals": [
+      "describe",
+      "before",
+      "beforeEach",
+      "after",
+      "afterEach",
+      "it"
+    ],
+    "rules": {
+      "array-bracket-spacing": [
+        2,
+        "always"
+      ],
+      "brace-style": [
+        2,
+        "stroustrup"
+      ],
+      "max-nested-callbacks": [
+        2,
+        5
+      ],
+      "no-unused-vars": [
+        2,
+        {
+          "argsIgnorePattern": "^_"
+        }
+      ],
+      "space-before-function-paren": [
+        2,
+        "never"
+      ]
+    }
+  },
   "author": "Christopher M. Baker",
   "license": "MIT",
   "bugs": {
@@ -30,9 +64,10 @@
   },
   "homepage": "https://github.com/bakerface/gherk",
   "devDependencies": {
-    "codeclimate-test-reporter": "^0.1.0",
-    "istanbul": "^0.3.17",
-    "mocha": "^2.2.5",
-    "should": "^7.0.3"
+    "codeclimate-test-reporter": "^0.3.1",
+    "istanbul": "^0.4.2",
+    "mocha": "^2.4.5",
+    "should": "^8.2.2",
+    "xo": "^0.13.0"
   }
 }

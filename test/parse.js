@@ -27,7 +27,7 @@ var gherk = require('..');
 describe('gherk.parse(text)', function() {
   it('should return an empty list when text is undefined', function() {
     should(gherk.parse()).eql([ ]);
-  })
+  });
 
   it('should throw an error if malformed', function(done) {
     var feature = [
@@ -63,7 +63,7 @@ describe('gherk.parse(text)', function() {
       should(e).eql(new SyntaxError('Oh wow, this is a mistake'));
       done();
     }
-  })
+  });
 
   it('should parse a string', function() {
     var feature = [
@@ -140,7 +140,7 @@ describe('gherk.parse(text)', function() {
         ]
       }
     ]);
-  })
+  });
 
   it('should parse a buffer', function() {
     var feature = [
@@ -217,5 +217,5 @@ describe('gherk.parse(text)', function() {
         ]
       }
     ]);
-  })
-})
+  });
+});

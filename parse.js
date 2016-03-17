@@ -39,7 +39,9 @@ function extract(line, regex, index) {
 }
 
 module.exports = function(text) {
-  var match, feature, scenario, previous;
+  var feature;
+  var scenario;
+  var previous;
   var features = [];
   var lines = (text || '').toString().split(R_NEWLINE);
 

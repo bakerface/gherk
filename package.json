@@ -1,6 +1,6 @@
 {
   "name": "gherk",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A minimalistic parser for the Gherkin syntax",
   "main": "index.js",
   "scripts": {
@@ -65,9 +65,9 @@
   "homepage": "https://github.com/bakerface/gherk",
   "devDependencies": {
     "codeclimate-test-reporter": "^0.3.1",
-    "istanbul": "^0.4.2",
-    "mocha": "^2.4.5",
-    "should": "^8.2.2",
-    "xo": "^0.13.0"
+    "istanbul": "^0.4.3",
+    "mocha": "^2.5.3",
+    "should": "^9.0.0",
+    "xo": "^0.15.1"
   }
 }

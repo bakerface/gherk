@@ -2,9 +2,10 @@ import { parse } from ".";
 
 const features = parse(`
 Feature: Can drink beer when thirsty
+
   As a drinker
   I want to take beer off the wall
-  In order to satisfy my thirst
+  in order to satisfy my thirst
 
   Background:
     Given 100 bottles of beer on the wall

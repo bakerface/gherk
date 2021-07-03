@@ -1,327 +1,232 @@
-export interface Feature {
-  readonly name: string;
-  readonly description: string;
-  readonly backgrounds: readonly Background[];
-  readonly scenarios: readonly Scenario[];
+import { TokenOf, tokenize } from "./tokenize";
+import { Background, Feature, Scenario } from "./types";
+
+export type Token = TokenOf<typeof parsers>;
+
+const parsers = {
+  space: /[\t ]+/,
+  newline: /\r?\n/,
+  colon: /:/,
+  feature: /Feature/,
+  scenario: /Scenario/,
+  background: /Background/,
+  given: /Given/,
+  when: /When/,
+  then: /Then/,
+  and: /And/,
+  but: /But/,
+  word: /\w+/,
+  punctuation: /./,
+};
+
+export function parse(text: string): Feature[] {
+  return document(tokenize(text, parsers));
 }
 
-export interface Background {
-  readonly name: string;
-  readonly description: string;
-  readonly givens: readonly string[];
-}
+export class ParseError extends Error {
+  constructor(token: Token | undefined, message: string) {
+    super();
 
-export interface Scenario {
-  readonly name: string;
-  readonly description: string;
-  readonly backgrounds: readonly string[];
-  readonly givens: readonly string[];
-  readonly whens: readonly string[];
-  readonly thens: readonly string[];
-}
-
-export interface Parser {
-  feature(text: string): Parser;
-  description(text: string): Parser;
-  scenario(text: string): Parser;
-  background(text: string): Parser;
-  given(text: string): Parser;
-  when(text: string): Parser;
-  then(text: string): Parser;
-  and(text: string): Parser;
-  but(text: string): Parser;
-  end(): readonly Feature[];
-}
-
-export function parse(document: Buffer | string): readonly Feature[] {
-  let parser = parseDocument([]);
-
-  for (const line of document.toString().split(/\r?\n/g)) {
-    const description = line.trim();
-    const feature = extract(line, "Feature:");
-    const scenario = extract(line, "Scenario:");
-    const background = extract(line, "Background:");
-    const given = extract(line, "Given ");
-    const when = extract(line, "When ");
-    const then = extract(line, "Then ");
-    const and = extract(line, "And ");
-    const but = extract(line, "But ");
-
-    if (feature) {
-      parser = parser.feature(feature.text);
-    } else if (scenario) {
-      parser = parser.scenario(scenario.text);
-    } else if (background) {
-      parser = parser.background(background.text);
-    } else if (given) {
-      parser = parser.given(given.text);
-    } else if (when) {
-      parser = parser.when(when.text);
-    } else if (then) {
-      parser = parser.then(then.text);
-    } else if (and) {
-      parser = parser.and(and.text);
-    } else if (but) {
-      parser = parser.but(but.text);
-    } else if (description) {
-      parser = parser.description(description);
+    if (token) {
+      const json = JSON.stringify(token.value);
+      this.message = `${message}, but found ${token.type} ${json}`;
+    } else {
+      this.message = message;
     }
   }
-
-  return parser.end();
 }
 
-function extract(line: string, first: string) {
-  const trimmed = line.trim();
+function document(tokens: Token[]): Feature[] {
+  const features: Feature[] = [];
 
-  if (!trimmed.startsWith(first)) {
-    return null;
+  let token: Token | undefined;
+
+  while ((token = tokens.shift())) {
+    if (token.type === "newline") continue;
+    if (token.type === "space") continue;
+
+    if (token.type !== "feature") {
+      throw new ParseError(token, "Expected feature");
+    }
+
+    features.push(feature(tokens));
   }
 
-  const offset = line.indexOf(first);
-  const text = line.slice(offset + first.length).trim();
-
-  return { offset, text };
+  return features;
 }
 
-function parseDocument(features: readonly Feature[]): Parser {
+function feature(tokens: Token[]): Feature {
+  let token: Token | undefined;
+
+  if (!(token = tokens.shift()) || token.type !== "colon") {
+    throw new ParseError(token, "Expected a colon after the feature keyword");
+  }
+
+  const name = line(tokens);
+  const description: string[] = [];
+  const backgrounds: Background[] = [];
+  const scenarios: Scenario[] = [];
+
+  while ((token = tokens.shift())) {
+    if (token.type === "newline") continue;
+    if (token.type === "space") continue;
+
+    if (token.type === "word") {
+      description.push(token.value);
+      description.push(line(tokens));
+      continue;
+    }
+
+    if (token.type === "background") {
+      backgrounds.push(background(tokens));
+      continue;
+    }
+
+    if (token.type === "scenario") {
+      scenarios.push(scenario(tokens));
+      continue;
+    }
+
+    if (token.type === "feature") {
+      tokens.unshift(token);
+      break;
+    }
+
+    throw new ParseError(token, "Expected background or scenario");
+  }
+
   return {
-    feature: (name) =>
-      parseFeature(features, {
-        name,
-        description: "",
-        backgrounds: [],
-        scenarios: [],
-      }),
-    description: () => parseDocument(features),
-    scenario: () => parseDocument(features),
-    background: () => parseDocument(features),
-    given: () => parseDocument(features),
-    when: () => parseDocument(features),
-    then: () => parseDocument(features),
-    and: () => parseDocument(features),
-    but: () => parseDocument(features),
-    end: () => features,
+    name,
+    description: description.join(" "),
+    scenarios,
+    backgrounds,
   };
 }
 
-function parseFeature(features: readonly Feature[], feature: Feature): Parser {
+function background(tokens: Token[]): Background {
+  let token: Token | undefined;
+
+  if (!(token = tokens.shift()) || token.type !== "colon") {
+    throw new ParseError(
+      token,
+      "Expected a colon after the background keyword"
+    );
+  }
+
+  const name = line(tokens);
+  const description: string[] = [];
+  const givens: string[] = [];
+
+  while ((token = tokens.shift())) {
+    if (token.type === "newline") continue;
+    if (token.type === "space") continue;
+
+    if (token.type === "word") {
+      description.push(token.value);
+      description.push(line(tokens));
+      continue;
+    }
+
+    if (token.type === "given" || token.type === "and") {
+      givens.push(line(tokens));
+      continue;
+    }
+
+    if (token.type === "feature" || token.type === "scenario") {
+      tokens.unshift(token);
+      break;
+    }
+
+    throw new ParseError(token, "Expected given");
+  }
+
   return {
-    feature: (name) => {
-      return parseFeature(features.concat(feature), {
-        name,
-        description: "",
-        backgrounds: [],
-        scenarios: [],
-      });
-    },
-    description: (text) =>
-      parseFeature(features, {
-        ...feature,
-        description: (feature.description + " " + text).trim(),
-      }),
-    scenario: (name) =>
-      parseScenario(features, feature, {
-        name,
-        description: "",
-        backgrounds: [],
-        givens: [],
-        whens: [],
-        thens: [],
-      }),
-    background: (name) =>
-      parseBackground(features, feature, {
-        name,
-        description: "",
-        givens: [],
-      }),
-    given: () => parseFeature(features, feature),
-    when: () => parseFeature(features, feature),
-    then: () => parseFeature(features, feature),
-    and: () => parseFeature(features, feature),
-    but: () => parseFeature(features, feature),
-    end: () => features.concat(feature),
+    name,
+    description: description.join(" "),
+    givens,
   };
 }
 
-function parseBackground(
-  features: readonly Feature[],
-  feature: Feature,
-  background: Background
-): Parser {
+function scenario(tokens: Token[]): Scenario {
+  let token: Token | undefined;
+
+  if (!(token = tokens.shift()) || token.type !== "colon") {
+    throw new ParseError(token, "Expected a colon after the scenario keyword");
+  }
+
+  const name = line(tokens);
+  const description: string[] = [];
+  const givens: string[] = [];
+  const whens: string[] = [];
+  const thens: string[] = [];
+
+  let group: string[] | undefined;
+
+  while ((token = tokens.shift())) {
+    if (token.type === "newline") continue;
+    if (token.type === "space") continue;
+
+    if (token.type === "word") {
+      description.push(token.value);
+      description.push(line(tokens));
+      continue;
+    }
+
+    if (token.type === "given") {
+      givens.push(line(tokens));
+      group = givens;
+      continue;
+    }
+
+    if (token.type === "when") {
+      whens.push(line(tokens));
+      group = whens;
+      continue;
+    }
+
+    if (token.type === "then") {
+      thens.push(line(tokens));
+      group = thens;
+      continue;
+    }
+
+    if (token.type === "and" || token.type === "but") {
+      if (!group) {
+        throw new ParseError(token, "Expected a given, when, or then");
+      }
+
+      group.push(line(tokens));
+      continue;
+    }
+
+    if (token.type === "feature" || token.type === "scenario") {
+      tokens.unshift(token);
+      break;
+    }
+
+    throw new ParseError(token, "Expected a given, when, or then");
+  }
+
   return {
-    feature: (name) => {
-      return parseFeature(
-        features.concat({
-          ...feature,
-          backgrounds: feature.backgrounds.concat(background),
-        }),
-        {
-          name,
-          description: "",
-          backgrounds: [],
-          scenarios: [],
-        }
-      );
-    },
-    description: (text) =>
-      parseBackground(features, feature, {
-        ...background,
-        description: (background.description + " " + text).trim(),
-      }),
-    scenario: (name) =>
-      parseScenario(
-        features,
-        {
-          ...feature,
-          backgrounds: feature.backgrounds.concat(background),
-        },
-        {
-          name,
-          description: "",
-          backgrounds: [],
-          givens: [],
-          whens: [],
-          thens: [],
-        }
-      ),
-    background: (name) =>
-      parseBackground(
-        features,
-        {
-          ...feature,
-          backgrounds: feature.backgrounds.concat(background),
-        },
-        {
-          name,
-          description: "",
-          givens: [],
-        }
-      ),
-    given: (text) =>
-      parseBackground(features, feature, {
-        ...background,
-        givens: background.givens.concat(text),
-      }),
-    and: (text) =>
-      parseBackground(features, feature, {
-        ...background,
-        givens: background.givens.concat(text),
-      }),
-    when: () => parseBackground(features, feature, background),
-    then: () => parseBackground(features, feature, background),
-    but: () => parseBackground(features, feature, background),
-    end: () =>
-      features.concat({
-        ...feature,
-        backgrounds: feature.backgrounds.concat(background),
-      }),
+    name,
+    description: description.join(" "),
+    givens,
+    whens,
+    thens,
   };
 }
 
-function parseScenario(
-  features: readonly Feature[],
-  feature: Feature,
-  scenario: Scenario
-): Parser {
-  return {
-    feature: (name) => {
-      return parseFeature(
-        features.concat({
-          ...feature,
-          scenarios: feature.scenarios.concat(scenario),
-        }),
-        {
-          name,
-          description: "",
-          backgrounds: [],
-          scenarios: [],
-        }
-      );
-    },
-    description: (text) =>
-      parseScenario(features, feature, {
-        ...scenario,
-        description: (scenario.description + " " + text).trim(),
-      }),
-    scenario: (name) =>
-      parseScenario(
-        features,
-        {
-          ...feature,
-          scenarios: feature.scenarios.concat(scenario),
-        },
-        {
-          name,
-          description: "",
-          backgrounds: [],
-          givens: [],
-          whens: [],
-          thens: [],
-        }
-      ),
-    background: (text) =>
-      parseScenario(features, feature, {
-        ...scenario,
-        backgrounds: scenario.backgrounds.concat(text),
-      }),
-    given: (text) =>
-      parseGiven(features, feature, {
-        ...scenario,
-        givens: scenario.givens.concat(text),
-      }),
-    when: (text) =>
-      parseWhen(features, feature, {
-        ...scenario,
-        whens: scenario.whens.concat(text),
-      }),
-    then: (text) =>
-      parseThen(features, feature, {
-        ...scenario,
-        thens: scenario.thens.concat(text),
-      }),
-    and: () => parseScenario(features, feature, scenario),
-    but: () => parseScenario(features, feature, scenario),
-    end: () =>
-      features.concat({
-        ...feature,
-        scenarios: feature.scenarios.concat(scenario),
-      }),
-  };
-}
+function line(tokens: Token[]): string {
+  let token: Token | undefined;
+  let line = "";
 
-function parseGiven(
-  features: readonly Feature[],
-  feature: Feature,
-  scenario: Scenario
-): Parser {
-  return {
-    ...parseScenario(features, feature, scenario),
-    and: (text) => parseScenario(features, feature, scenario).given(text),
-    but: (text) => parseScenario(features, feature, scenario).given(text),
-  };
-}
+  while ((token = tokens.shift())) {
+    if (token.type === "newline") {
+      break;
+    }
 
-function parseWhen(
-  features: readonly Feature[],
-  feature: Feature,
-  scenario: Scenario
-): Parser {
-  return {
-    ...parseScenario(features, feature, scenario),
-    and: (text) => parseScenario(features, feature, scenario).when(text),
-    but: (text) => parseScenario(features, feature, scenario).when(text),
-  };
-}
+    line += token.value;
+  }
 
-function parseThen(
-  features: readonly Feature[],
-  feature: Feature,
-  scenario: Scenario
-): Parser {
-  return {
-    ...parseScenario(features, feature, scenario),
-    and: (text) => parseScenario(features, feature, scenario).then(text),
-    but: (text) => parseScenario(features, feature, scenario).then(text),
-  };
+  return line.trim();
 }

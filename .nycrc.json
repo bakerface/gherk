@@ -1,0 +1,14 @@
+{
+  "checkCoverage": true,
+  "sourceMap": true,
+  "skipFull": true,
+  "branches": 100,
+  "functions": 100,
+  "lines": 100,
+  "statements": 100,
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["**/*.test.*"],
+  "extension": [".ts", ".tsx"],
+  "reporter": ["text"],
+  "require": ["ts-node/register"]
+}

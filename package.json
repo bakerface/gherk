@@ -1,6 +1,6 @@
 {
   "name": "gherk",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "A minimalistic parser for the Gherkin syntax",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

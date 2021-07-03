@@ -10,6 +10,7 @@ A minimalistic parser for the Gherkin syntax.
 import { parse } from "gherk";
 
 const features = parse(`
+@beer @example
 Feature: Can drink beer when thirsty
 
   As a drinker
@@ -45,6 +46,7 @@ The code snippet above would output the following JSON object to your console.
   {
     "name": "Can drink beer when thirsty",
     "description": "As a drinker I want to take beer off the wall in order to satisfy my thirst",
+    "tags": ["beer", "example"],
     "backgrounds": [
       {
         "name": "",

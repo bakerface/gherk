@@ -7,6 +7,7 @@ const parsers = {
   space: /[\t ]+/,
   newline: /\r?\n/,
   colon: /:/,
+  tag: /@/,
   feature: /Feature/,
   scenario: /Scenario/,
   background: /Background/,
@@ -37,6 +38,7 @@ export class ParseError extends Error {
 }
 
 function document(tokens: Token[]): Feature[] {
+  const tags: string[] = [];
   const features: Feature[] = [];
 
   let token: Token | undefined;
@@ -45,17 +47,26 @@ function document(tokens: Token[]): Feature[] {
     if (token.type === "newline") continue;
     if (token.type === "space") continue;
 
+    if (token.type === "tag") {
+      if (!(token = tokens.shift()) || token.type !== "word") {
+        throw new ParseError(token, "Expected a tag");
+      }
+
+      tags.push(token.value);
+      continue;
+    }
+
     if (token.type !== "feature") {
       throw new ParseError(token, "Expected feature");
     }
 
-    features.push(feature(tokens));
+    features.push(feature(tokens, tags.splice(0)));
   }
 
   return features;
 }
 
-function feature(tokens: Token[]): Feature {
+function feature(tokens: Token[], tags: string[]): Feature {
   let token: Token | undefined;
 
   if (!(token = tokens.shift()) || token.type !== "colon") {
@@ -98,6 +109,7 @@ function feature(tokens: Token[]): Feature {
   return {
     name,
     description: description.join(" "),
+    tags,
     scenarios,
     backgrounds,
   };

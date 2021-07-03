@@ -1,6 +1,7 @@
 export interface Feature {
   readonly name: string;
   readonly description: string;
+  readonly tags: string[];
   readonly backgrounds: Background[];
   readonly scenarios: Scenario[];
 }
